@@ -6,82 +6,80 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>World Domination</title>
 <style>
-body {
-  background:#18232d;
-  color:white;
-  font-family:Arial;
-  text-align:center;
-  margin:0;
+*{box-sizing:border-box}
+body{
+ margin:0;background:#18232d;color:white;
+ font-family:Arial;text-align:center;
 }
-header {background:#101820;padding:15px}
-.stats {
-  display:flex;
-  justify-content:space-around;
-  padding:15px;
-  background:#263746;
+header{background:#101820;padding:15px}
+.stats{
+ display:flex;justify-content:space-around;
+ padding:15px;background:#263746;
+ font-size:15px;
 }
-#map {
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:5px;
-  padding:10px;
-  max-width:500px;
-  margin:auto;
+#message{
+ padding:14px;min-height:55px;
+ background:#202e3a;
 }
-.tile {
-  aspect-ratio:1;
-  border:2px solid #82909b;
-  border-radius:7px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  font-size:12px;
-  cursor:pointer;
+#map{
+ display:grid;grid-template-columns:repeat(5,1fr);
+ gap:5px;padding:10px;
+ max-width:550px;margin:auto;
 }
-.player {background:#1769aa}
-.enemy {background:#a52e32}
-.neutral {background:#59636b}
-.selected {border:3px solid yellow}
-button {
-  padding:12px;
-  margin:5px;
-  border:0;
-  border-radius:7px;
-  background:#d69b32;
-  font-weight:bold;
+.tile{
+ aspect-ratio:1;border:2px solid #82909b;
+ border-radius:8px;display:flex;
+ flex-direction:column;justify-content:center;
+ font-size:clamp(9px,2.5vw,13px);
+ cursor:pointer;overflow:hidden;
 }
-#message {padding:12px;min-height:35px}
+.player{background:#1769aa}
+.enemy{background:#a52e32}
+.neutral{background:#59636b}
+.selected{border:3px solid #ffe34d}
+button{
+ padding:13px;margin:5px;border:0;
+ border-radius:8px;background:#d69b32;
+ font-weight:bold;font-size:14px;
+}
+.actions{padding:8px}
+button:active{transform:scale(.96)}
+footer{padding:15px;color:#9eacb8;font-size:12px}
 </style>
 </head>
 <body>
+
 <header>
 <h2>⚔ WORLD DOMINATION</h2>
 <p>Dünyayı fethet!</p>
 </header>
 
 <div class="stats">
-<span>💰 <b id="gold">30</b></span>
+<span>💰 <b id="gold">50</b></span>
 <span>🏙 <b id="cities">3</b></span>
+<span>🪖 <b id="army">9</b></span>
 <span>📅 <b id="turn">1</b></span>
 </div>
 
-<div id="message">Kendi şehrini seç!</div>
+<div id="message">Birliklerini yönetmek için kendi şehrini seç!</div>
 <div id="map"></div>
 
-<button onclick="recruit()">➕ Asker üret (10)</button>
+<div class="actions">
+<button onclick="recruit()">➕ Asker üret (10 altın)</button>
 <button onclick="endTurn()">⏭ Turu bitir</button>
+<button onclick="showHelp()">❔ Yardım</button>
+</div>
+
+<footer>WORLD DOMINATION • İlk geliştirme sürümü</footer>
 
 <script>
-const map = [
+const map=[
 ["P","P","N","E","E"],
 ["P","P","N","E","E"],
 ["N","P","P","N","E"],
 ["N","N","E","E","N"],
 ["N","N","N","E","N"]
 ];
-
-const units=map.map(row=>row.map(x=>
-x==="P"?3:x==="E"?2:0));
 
 const names=[
 "Ankara","İstanbul","İzmir","Berlin","Paris",
@@ -91,115 +89,178 @@ const names=[
 "Tahran","Bağdat","Kahire","Şam","Riyad"
 ];
 
-let gold=30,turn=1,selected=null;
+const units=map.map(row=>row.map(x=>
+ x==="P"?3:x==="E"?2:0
+));
+
+let gold=50,turn=1,selected=null;
 const mapEl=document.getElementById("map");
 const message=document.getElementById("message");
 
 function render(){
-mapEl.innerHTML="";
-let cities=0;
+ mapEl.innerHTML="";
+ let cities=0,army=0;
 
-map.forEach((row,r)=>{
-row.forEach((owner,c)=>{
-if(owner==="P")cities++;
-const cell=document.createElement("div");
-cell.className="tile "+
-(owner==="P"?"player":owner==="E"?"enemy":"neutral");
-if(selected&&selected[0]===r&&selected[1]===c)
-cell.classList.add("selected");
-cell.innerHTML=`<b>${names[r*5+c]}</b><br>
-${owner==="P"?"🔵":owner==="E"?"🔴":"⚪"}<br>
-🪖 ${units[r][c]}`;
-cell.onclick=()=>selectTile(r,c);
-mapEl.appendChild(cell);
-});
-});
+ map.forEach((row,r)=>{
+ row.forEach((owner,c)=>{
+ if(owner==="P")cities++;
+ if(owner==="P")army+=units[r][c];
 
-document.getElementById("gold").textContent=gold;
-document.getElementById("cities").textContent=cities;
-document.getElementById("turn").textContent=turn;
+ const cell=document.createElement("div");
+ cell.className="tile "+
+ (owner==="P"?"player":owner==="E"?"enemy":"neutral");
+
+ if(selected&&selected[0]===r&&selected[1]===c)
+ cell.classList.add("selected");
+
+ cell.innerHTML=
+ "<b>"+names[r*5+c]+"</b><br>"+
+ (owner==="P"?"🔵":owner==="E"?"🔴":"⚪")+
+ "<br>🪖 "+units[r][c];
+
+ cell.onclick=()=>selectTile(r,c);
+ mapEl.appendChild(cell);
+ });
+ });
+
+ document.getElementById("gold").textContent=gold;
+ document.getElementById("cities").textContent=cities;
+ document.getElementById("army").textContent=army;
+ document.getElementById("turn").textContent=turn;
 }
 
 function selectTile(r,c){
-if(!selected){
-if(map[r][c]!=="P"){
-message.textContent="Önce kendi şehrini seç!";
-return;
-}
-selected=[r,c];
-message.textContent="Şimdi komşu bölgeye saldır!";
-}else{
-const [sr,sc]=selected;
-if(Math.abs(r-sr)+Math.abs(c-sc)!==1){
-message.textContent="Sadece komşu bölgeye saldırabilirsin!";
-}else if(map[r][c]==="P"){
-message.textContent="Burası zaten senin!";
-}else{
-attack(sr,sc,r,c);
-}
-selected=null;
-}
-render();
+ if(!selected){
+  if(map[r][c]!=="P"){
+   message.textContent="Önce kendi şehrini seç!";
+   return;
+  }
+  selected=[r,c];
+  message.textContent="Şimdi komşu bölgeye dokunarak saldır!";
+ }else{
+  const [sr,sc]=selected;
+
+  if(r===sr&&c===sc){
+   selected=null;
+   message.textContent="Seçim kaldırıldı.";
+  }else if(Math.abs(r-sr)+Math.abs(c-sc)!==1){
+   message.textContent="Sadece komşu bölgeye saldırabilirsin!";
+  }else if(map[r][c]==="P"){
+   message.textContent="Burası zaten senin!";
+  }else{
+   attack(sr,sc,r,c);
+   selected=null;
+  }
+ }
+ render();
 }
 
 function attack(sr,sc,r,c){
-if(units[sr][sc]<1){
-message.textContent="Askerin yok!";
-return;
-}
-if(map[r][c]==="N"){
-units[sr][sc]--;
-map[r][c]="P";
-units[r][c]=1;
-message.textContent="Bölgeyi ele geçirdin!";
-}else{
-if(units[sr][sc]<2){
-message.textContent="En az 2 asker gerekli!";
-return;
-}
-units[sr][sc]-=2;
-units[r][c]--;
-if(units[r][c]<=0){
-map[r][c]="P";
-units[r][c]=1;
-message.textContent="Zafer! Düşman şehri senin!";
-}else{
-message.textContent="Düşman direndi!";
-}
-}
-checkWin();
+ if(units[sr][sc]<1){
+  message.textContent="Askerin yok!";
+  return;
+ }
+
+ if(map[r][c]==="N"){
+  units[sr][sc]--;
+  map[r][c]="P";
+  units[r][c]=1;
+  gold+=5;
+  message.textContent="🏆 Bölgeyi fethettin! +5 altın";
+ }else{
+  if(units[sr][sc]<2){
+   message.textContent="Düşmana saldırmak için en az 2 asker gerekli!";
+   return;
+  }
+
+  units[sr][sc]-=2;
+  units[r][c]--;
+
+  if(units[r][c]<=0){
+   map[r][c]="P";
+   units[r][c]=1;
+   gold+=15;
+   message.textContent="🏆 Düşman şehri fethedildi! +15 altın";
+  }else{
+   message.textContent="⚔ Düşman direndi!";
+  }
+ }
+ checkWin();
 }
 
 function recruit(){
-if(!selected){
-message.textContent="Önce kendi şehrini seç!";
-return;
+ if(!selected){
+  message.textContent="Önce kendi şehrini seç!";
+  return;
+ }
+ const [r,c]=selected;
+ if(map[r][c]!=="P")return;
+ if(gold<10){
+  message.textContent="Yeterli altının yok!";
+  return;
+ }
+ gold-=10;
+ units[r][c]+=2;
+ message.textContent="🪖 2 yeni asker üretildi!";
+ render();
 }
-let [r,c]=selected;
-if(map[r][c]!=="P")return;
-if(gold<10){
-message.textContent="Yeterli paran yok!";
-return;
-}
-gold-=10;
-units[r][c]+=2;
-message.textContent="2 asker üretildi!";
-render();
+
+function enemyTurn(){
+ let attacked=false;
+
+ for(let r=0;r<5&&!attacked;r++){
+  for(let c=0;c<5&&!attacked;c++){
+   if(map[r][c]!=="E"||units[r][c]<2)continue;
+
+   const directions=[[1,0],[-1,0],[0,1],[0,-1]];
+
+   for(const [dr,dc] of directions){
+    const nr=r+dr,nc=c+dc;
+    if(nr<0||nr>=5||nc<0||nc>=5)continue;
+
+    if(map[nr][nc]==="P"){
+     units[r][c]-=2;
+     units[nr][nc]--;
+
+     if(units[nr][nc]<=0){
+      map[nr][nc]="E";
+      units[nr][nc]=1;
+      message.textContent="🔴 Düşman "+names[nr*5+nc]+" şehrini ele geçirdi!";
+     }else{
+      message.textContent="🔴 Düşman saldırdı! Savunma yaptın.";
+     }
+     attacked=true;
+     break;
+    }
+   }
+  }
+ }
 }
 
 function endTurn(){
-turn++;
-let income=map.flat().filter(x=>x==="P").length*3;
-gold+=income;
-message.textContent="Yeni tur! "+income+" altın kazandın.";
-render();
+ turn++;
+ const income=map.flat().filter(x=>x==="P").length*5;
+ gold+=income;
+ enemyTurn();
+ selected=null;
+ if(!map.flat().includes("E")){
+  checkWin();
+ }else{
+  message.textContent+=" Yeni tur! "+income+" altın kazandın.";
+ }
+ render();
 }
 
 function checkWin(){
-if(!map.flat().includes("E")){
-message.textContent="🏆 ZAFER! Bütün düşmanları yendin!";
+ if(!map.flat().includes("E")){
+  message.textContent="🏆 ZAFER! Bütün düşmanları fethettin!";
+ }
 }
+
+function showHelp(){
+ message.textContent="Kendi şehrini seç. Komşu bölgeye saldır. Asker üretmek 10 altın. Her tur şehir başına 5 altın kazanırsın.";
 }
+
 render();
 </script>
 </body>
