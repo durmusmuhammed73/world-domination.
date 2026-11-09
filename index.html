@@ -3,103 +3,148 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>World Domination 2.0</title>
+<title>World Conqueror — Dünya Savaşı</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-:root{--bg:#101820;--panel:#1d2b36;--gold:#e0a32e;--blue:#1976bd;--red:#b8323b;--muted:#9eabb5}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#fff;font-family:Arial,sans-serif}
-header{padding:12px 14px;text-align:center;background:#0b1218;border-bottom:1px solid #34434e}
-header strong{font-size:20px;letter-spacing:1px}header small{display:block;color:#b8c4cd;margin-top:4px}
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:9px 5px;background:#263746;text-align:center;font-weight:bold}
-.stat{font-size:15px}.stat span{display:block;color:#cbd5dc;font-size:11px;font-weight:normal;margin-top:2px}
-#notice{padding:9px 12px;text-align:center;background:#202e3a;color:#fff;font-size:13px;min-height:38px}
-#map{height:56vh;min-height:330px;width:100%;background:#d8e1e7}
-.controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px}
-button{border:0;border-radius:9px;padding:12px 7px;font-size:14px;font-weight:bold;background:var(--gold);color:#161616}
-button.secondary{background:#344754;color:white}button:disabled{opacity:.4}
-.info{margin:0 10px 10px;padding:10px;background:var(--panel);border:1px solid #344754;border-radius:9px;font-size:13px;line-height:1.5}
-.info b{color:#f3c46b}.legend{display:flex;justify-content:center;gap:14px;font-size:11px;color:#d5dde2;padding:0 0 9px}
-.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px}
-#countryName{font-size:16px;font-weight:bold;color:#ffd078}
-.leaflet-container{font:12px Arial}
-@media(min-width:800px){#map{height:65vh}.controls{max-width:900px;margin:auto}.info{max-width:900px;margin:0 auto 10px}}
+:root{--bg:#101820;--panel:#1c2933;--panel2:#263743;--gold:#e3aa3c;--blue:#2479b9;--red:#b83c42;--gray:#697781;--line:#40515d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#f5f7f8;font-family:Arial,sans-serif}
+header{height:54px;background:#0b1218;display:flex;align-items:center;justify-content:space-between;padding:0 13px;border-bottom:1px solid var(--line)}
+.brand{font-weight:800;letter-spacing:1px;font-size:17px}.year{font-size:12px;color:#c7d1d8}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--panel2);padding:9px 2px;text-align:center}
+.stat{font-size:17px;font-weight:bold}.stat small{display:block;font-size:10px;color:#c2cbd1;font-weight:normal;margin-top:3px;letter-spacing:.5px}
+#map{height:53vh;min-height:330px;background:#b8cbd5}
+.leaflet-container{font:12px Arial}.leaflet-control-attribution{font-size:9px!important}
+#status{background:#202e38;padding:9px 12px;text-align:center;font-size:13px;min-height:37px;line-height:1.35}
+.layout{padding:9px;display:grid;grid-template-columns:1fr;gap:8px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:10px}
+.panelhead{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px}
+#selectedName{font-size:17px;font-weight:bold;color:#f3c46b}
+#selectedDetails{font-size:12px;line-height:1.45;color:#d1d9de;min-height:35px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+button{border:0;border-radius:8px;padding:12px 5px;font-weight:bold;font-size:13px;background:var(--gold);color:#161b1e}
+button.dark{background:#354955;color:white}button:disabled{opacity:.35}
+.legend{display:flex;gap:12px;justify-content:center;padding:7px;font-size:11px;color:#d3dce1}
+.dot{width:9px;height:9px;display:inline-block;border-radius:50%;margin-right:4px}
+.tip{font-size:11px;color:#b8c5cc;line-height:1.4}
+@media(min-width:850px){#map{height:64vh}.layout{max-width:1100px;margin:auto;grid-template-columns:1.2fr 1fr}.actions{align-content:start}.stats{padding:12px}.stat{font-size:20px}}
 </style>
 </head>
 <body>
-<header><strong>⚔ WORLD DOMINATION 2.0</strong><small>Dünya haritasında fetih mücadelesi</small></header>
+<header><div class="brand">⚔ WORLD CONQUEROR</div><div class="year">1939 • TUR 1</div></header>
 <section class="stats">
- <div class="stat">💰 <b id="gold">100</b><span>ALTIN</span></div>
- <div class="stat">🌍 <b id="owned">1</b><span>ÜLKE</span></div>
- <div class="stat">🪖 <b id="army">20</b><span>ASKER</span></div>
- <div class="stat">📅 <b id="turn">1</b><span>TUR</span></div>
+ <div class="stat">💰 <b id="gold">120</b><small>ALTIN</small></div>
+ <div class="stat">🏳️ <b id="countries">1</b><small>ÜLKE</small></div>
+ <div class="stat">🪖 <b id="troops">18</b><small>TOPLAM ASKER</small></div>
+ <div class="stat">📅 <b id="turn">1</b><small>TUR</small></div>
 </section>
-<div id="notice">Türkiye senin başlangıç ülkendir. Haritadan fethetmek istediğin ülkeye dokun!</div>
+<div id="status">Türkiye senin karargâhın. Mavi ülkeler senin, kırmızılar düşman. Önce kendi ülkene dokun, sonra komşu hedef seç.</div>
 <div id="map"></div>
 <div class="legend">
- <span><i class="dot" style="background:#1976bd"></i>Senin ülkelerin</span>
- <span><i class="dot" style="background:#b8323b"></i>Düşman</span>
- <span><i class="dot" style="background:#9aa6ad"></i>Tarafsız</span>
+<span><i class="dot" style="background:#2479b9"></i>Sen</span>
+<span><i class="dot" style="background:#b83c42"></i>Düşman</span>
+<span><i class="dot" style="background:#a6b0b7"></i>Tarafsız</span>
+<span><i class="dot" style="background:#f0c04f"></i>Seçili</span>
 </div>
-<div class="info">
- <div>Seçili ülke: <b id="countryName">Henüz seçilmedi</b></div>
- <div id="countryInfo">Haritada bir ülkeye dokun. Kendi ülkene dokunursan bilgi görürsün.</div>
-</div>
-<div class="controls">
- <button id="attack" disabled>⚔️ SALDIR</button>
- <button id="recruit">➕ ASKER AL<br>(25 altın)</button>
- <button id="end">⏭ TURU BİTİR</button>
-</div>
-<div class="controls" style="padding-top:0">
- <button class="secondary" id="zoomHome">🇹🇷 TÜRKİYE'YE DÖN</button>
- <button class="secondary" id="help">❔ NASIL OYNANIR?</button>
- <button class="secondary" id="reset">↻ YENİ OYUN</button>
+<div class="layout">
+ <section class="panel">
+  <div class="panelhead"><b>Karargâh / Seçili bölge</b><span id="ownerTag" class="tip">BÖLGE SEÇ</span></div>
+  <div id="selectedName">Haritadan ülke seç</div>
+  <div id="selectedDetails">Birliklerini yönetmek için önce kendi ülkene dokun. Ardından komşu ülkeye saldırabilirsin.</div>
+ </section>
+ <section class="panel">
+  <div class="actions">
+   <button id="attack" disabled>⚔️ SALDIR</button>
+   <button id="recruit" disabled>➕ ASKER AL<br>30 altın</button>
+   <button id="end">⏭ TURU BİTİR</button>
+   <button id="center" class="dark">🎯 TÜRKİYE</button>
+   <button id="help" class="dark">❔ YARDIM</button>
+   <button id="restart" class="dark">↻ YENİ OYUN</button>
+  </div>
+  <p class="tip">Savaş taktiği: Kendi ülkeni seç, ardından sınır komşusu düşman veya tarafsız ülkeye dokun. Her saldırı 4 asker kullanır. Ülke başına her tur 12 altın kazanırsın.</p>
+ </section>
 </div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/@turf/turf@7.2.0/turf.min.js"></script>
 <script>
-const map=L.map('map',{worldCopyJump:true,minZoom:2}).setView([25,15],2);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(map);
-let gold=100,army=20,turn=1,selected=null,owned=new Set(['Turkey']),enemy=new Set(['Russia','China','United States','France','Iran','Egypt']);
-let layers={},geo=null;
-const aliases={'Türkiye':'Turkey','Turkey':'Turkey','United States of America':'United States','Russian Federation':'Russia','Iran (Islamic Republic of)':'Iran','Syrian Arab Republic':'Syria','Czechia':'Czech Republic','Korea, Republic of':'South Korea'};
-function norm(n){return aliases[n]||n}
-function say(t){document.getElementById('notice').textContent=t}
-function stats(){document.getElementById('gold').textContent=gold;document.getElementById('army').textContent=army;document.getElementById('turn').textContent=turn;document.getElementById('owned').textContent=owned.size}
-function color(n){return owned.has(n)?'#1976bd':enemy.has(n)?'#b8323b':'#9aa6ad'}
-function paint(){Object.entries(layers).forEach(([n,l])=>l.setStyle({color:selected===n?'#ffd166':'#263746',weight:selected===n?3:0.7,fillColor:color(n),fillOpacity:.78}))}
-function selectCountry(n){
- selected=n;document.getElementById('countryName').textContent=n;
- const own=owned.has(n),foe=enemy.has(n);
- document.getElementById('countryInfo').textContent=own?'Bu ülke senin kontrolünde.':foe?'Bu ülke düşman kontrolünde. Saldırarak ele geçirebilirsin.':'Bu ülke tarafsız. Saldırarak topraklarına katabilirsin.';
- document.getElementById('attack').disabled=own||army<5;
- paint();
-}
-function onFeature(f,l){let n=norm(f.properties.ADMIN||f.properties.name||f.properties.NAME||'Bilinmeyen');layers[n]=l;l.on('click',()=>selectCountry(n));l.bindTooltip(n,{sticky:true});}
-function startGame(){
- fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
- .then(r=>{if(!r.ok)throw Error('Harita verisi yüklenemedi');return r.json()})
- .then(data=>{geo=L.geoJSON(data,{style:f=>({color:'#263746',weight:.7,fillColor:color(norm(f.properties.ADMIN||f.properties.name||f.properties.NAME||'')),fillOpacity:.78}),onEachFeature:onFeature}).addTo(map);say('Harita hazır! Türkiye senin. Bir ülke seç ve saldır.');paint();})
- .catch(()=>say('Harita verisi yüklenemedi. İnternet bağlantını kontrol edip sayfayı yenile.'));
-}
-document.getElementById('attack').onclick=()=>{
- if(!selected||owned.has(selected)||army<5)return;
- let cost=5,def=enemy.has(selected)?14:8;
- let power=army+Math.floor(Math.random()*12),resist=def+Math.floor(Math.random()*12);
- army-=cost;
- if(power>=resist){owned.add(selected);enemy.delete(selected);gold+=20;say('🏆 '+selected+' fethedildi! +20 altın kazandın.');}
- else{say('🛡️ '+selected+' direndi. Saldırın başarısız oldu.');}
- selected=null;document.getElementById('countryName').textContent='Seçilmedi';document.getElementById('countryInfo').textContent='Yeni hedef seç.';document.getElementById('attack').disabled=true;stats();paint();
- if(owned.size>=30)say('🏆 Büyük imparatorluk kurdun! 30 ülkeye ulaştın.');
+const map=L.map('map',{worldCopyJump:true,minZoom:2,maxZoom:7}).setView([27,20],2);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:7,attribution:'© OpenStreetMap'}).addTo(map);
+const initial={
+ 'Turkey':{side:'player',army:18},'Greece':{side:'neutral',army:7},'Bulgaria':{side:'neutral',army:7},
+ 'Syria':{side:'neutral',army:6},'Iraq':{side:'neutral',army:6},'Georgia':{side:'neutral',army:6},
+ 'Russia':{side:'enemy',army:18},'Germany':{side:'enemy',army:16},'France':{side:'enemy',army:14},
+ 'Italy':{side:'enemy',army:12},'Iran':{side:'enemy',army:10},'China':{side:'enemy',army:18},
+ 'United States':{side:'enemy',army:20},'United Kingdom':{side:'enemy',army:12},'Egypt':{side:'neutral',army:7}
 };
-document.getElementById('recruit').onclick=()=>{if(gold<25){say('Yeterli altının yok. Tur bitirerek gelir kazan.');return}gold-=25;army+=10;stats();say('10 asker orduna katıldı.');};
-document.getElementById('end').onclick=()=>{
- turn++;let income=owned.size*8;gold+=income;
- if(Math.random()<.45&&owned.size>1){let loss=Math.min(3,army);army-=loss;say('🔴 Düşman saldırdı! '+loss+' asker kaybettin. Tur geliri: '+income+' altın.');}
- else say('Yeni tur! Ülkelerinden '+income+' altın gelir elde ettin.');
- stats();if(selected&&!owned.has(selected))document.getElementById('attack').disabled=army<5;
-};
-document.getElementById('zoomHome').onclick=()=>map.setView([39,35],4);
-document.getElementById('help').onclick=()=>say('Bir ülkeye dokunup SALDIR. Başarı için yeterli asker gerekir. Asker almak 25 altın, her tur ülke başına 8 altın kazandırır. Düşman ülkeleri daha güçlü savunur.');
-document.getElementById('reset').onclick=()=>{if(!confirm('Yeni oyuna başlamak istiyor musun?'))return;gold=100;army=20;turn=1;selected=null;owned=new Set(['Turkey']);enemy=new Set(['Russia','China','United States','France','Iran','Egypt']);stats();paint();say('Yeni oyun başladı. Türkiye senin başlangıç ülken.');};
-stats();startGame();
+let state={},features={},layers={},selected=null,mode='source',gold=120,turn=1,geoLayer=null;
+const aliases={'Türkiye':'Turkey','Turkey':'Turkey','United States of America':'United States','Russian Federation':'Russia','Iran (Islamic Republic of)':'Iran','Syrian Arab Republic':'Syria','United Kingdom of Great Britain and Northern Ireland':'United Kingdom'};
+const nameOf=f=>aliases[f.properties.ADMIN||f.properties.name||f.properties.NAME||'']||(f.properties.ADMIN||f.properties.name||f.properties.NAME||'Bilinmeyen');
+function say(t){document.getElementById('status').textContent=t}
+function ownedCount(){return Object.values(state).filter(x=>x.side==='player').length}
+function totalTroops(){return Object.values(state).filter(x=>x.side==='player').reduce((a,x)=>a+x.army,0)}
+function stats(){document.getElementById('gold').textContent=gold;document.getElementById('countries').textContent=ownedCount();document.getElementById('troops').textContent=totalTroops();document.getElementById('turn').textContent=turn;document.querySelector('.year').textContent=(1939+turn-1)+' • TUR '+turn}
+function fill(n){let s=state[n];return s?(s.side==='player'?'#2479b9':s.side==='enemy'?'#b83c42':'#a6b0b7'):'#a6b0b7'}
+function styleFor(n){return {color:selected===n?'#ffe08a':'#394b56',weight:selected===n?3:0.7,fillColor:fill(n),fillOpacity:.78}}
+function redraw(){Object.entries(layers).forEach(([n,l])=>l.setStyle(styleFor(n)));stats();updateButtons()}
+function neighbors(a,b){try{return turf.booleanTouches(features[a],features[b])||turf.booleanIntersects(turf.polygonToLine(features[a]),turf.polygonToLine(features[b]))}catch(e){return false}}
+function isAdjacent(a,b){if(!features[a]||!features[b])return false;return neighbors(a,b)}
+function updateButtons(){
+ let from=source?state[source]:null, target=selected?state[selected]:null;
+ document.getElementById('attack').disabled=!(from&&from.side==='player'&&target&&selected!==source&&target.side!=='player'&&from.army>=4&&isAdjacent(source,selected));
+ document.getElementById('recruit').disabled=!(from&&from.side==='player'&&gold>=30);
+}
+let source=null;
+function choose(n){
+ if(!state[n])state[n]={side:'neutral',army:6};
+ if(mode==='source'||!source){
+  if(state[n].side!=='player'){selected=n;document.getElementById('selectedName').textContent=n;document.getElementById('ownerTag').textContent='HEDEF';document.getElementById('selectedDetails').textContent='Bu bölgeyi saldırı hedefi olarak seçmek için önce kendi karargâhını seç.';redraw();return;}
+  source=n;selected=n;mode='target';
+  document.getElementById('selectedName').textContent=n;
+  document.getElementById('ownerTag').textContent='SENİN KARARGÂHIN';
+  document.getElementById('selectedDetails').textContent='Asker: '+state[n].army+' • Şimdi haritada sınır komşusu bir ülke seç.';
+  say(n+' seçildi. Şimdi komşu bir ülkeye dokunarak hedef belirle.');
+ }else{
+  if(n===source){mode='source';selected=n;source=null;document.getElementById('ownerTag').textContent='SENİN ÜLKEN';document.getElementById('selectedDetails').textContent='Asker: '+state[n].army+' • Asker alabilir veya başka karargâh seçebilirsin.';}
+  else if(isAdjacent(source,n)){
+   selected=n;document.getElementById('selectedName').textContent=n;
+   document.getElementById('ownerTag').textContent=state[n].side==='enemy'?'DÜŞMAN':state[n].side==='player'?'SENİN':'TARAFSIZ';
+   document.getElementById('selectedDetails').textContent='Savunma: '+state[n].army+' asker • Saldırmak için SALDIR düğmesine bas. Kaynağın: '+source;
+   say(source+' bölgesinden '+n+' hedefine saldırı hazırlığı.');
+  }else if(state[n].side==='player'){
+   source=n;selected=n;document.getElementById('selectedName').textContent=n;document.getElementById('ownerTag').textContent='SENİN KARARGÂHIN';document.getElementById('selectedDetails').textContent='Asker: '+state[n].army+' • Komşu hedef seç.';say('Yeni karargâh: '+n);
+  }else{say(n+' komşu değil. Önce sınır komşusu bir hedef seç.');}
+ }
+ redraw();
+}
+function battle(){
+ if(!source||!selected||selected===source)return;
+ let from=state[source],to=state[selected];if(!from||from.side!=='player'||from.army<4)return;
+ let attacker=from.army-4+Math.floor(Math.random()*7),defender=to.army+Math.floor(Math.random()*7)+(to.side==='enemy'?4:0);
+ from.army-=4;
+ if(attacker>defender){let old=to.side;to.side='player';to.army=Math.max(2,Math.floor(attacker/2));gold+=25;say('🏆 '+selected+' fethedildi! +25 altın. Ordun '+source+' bölgesinden ilerledi.');}
+ else{say('🛡️ '+selected+' savunmayı başardı. Saldıran birliklerin kayıp verdi.');}
+ mode='source';source=null;selected=null;document.getElementById('selectedName').textContent='Haritadan ülke seç';document.getElementById('ownerTag').textContent='KARARGÂH';document.getElementById('selectedDetails').textContent='Yeni bir kendi ülkene dokunarak saldırı başlat.';redraw();
+ if(ownedCount()>=10)say('🏆 Büyük bir güç oldun! 10 ülkeyi kontrol ediyorsun.');
+}
+function recruit(){if(!source||!state[source]||state[source].side!=='player'||gold<30)return;gold-=30;state[source].army+=10;document.getElementById('selectedDetails').textContent='Asker: '+state[source].army+' • 10 yeni asker katıldı.';say(source+' bölgesine 10 asker gönderildi.');redraw()}
+function enemyTurn(){
+ let attacks=0;
+ Object.keys(state).filter(n=>state[n].side==='enemy').forEach(n=>{
+  let adjacent=Object.keys(state).filter(p=>state[p].side==='player'&&isAdjacent(n,p));
+  if(adjacent.length&&Math.random()<.22){let target=adjacent[Math.floor(Math.random()*adjacent.length)];let e=state[n],p=state[target];if(e.army>p.army+5){p.side='enemy';p.army=Math.max(2,Math.floor((e.army-4)/2));e.army-=4;attacks++;}}
+ });
+ if(attacks)say('🔴 Düşman karşı saldırı yaptı! '+attacks+' bölge kaybettin. Savunmanı güçlendir.');
+}
+function endTurn(){turn++;gold+=ownedCount()*12;enemyTurn();if(ownedCount()===0){say('💥 Bütün ülkelerini kaybettin. Yeni oyun başlat.')}else if(ownedCount()>=25){say('🏆 Zafer! 25 ülkeyi kontrol ederek kıtada büyük güç oldun.')}else if(!document.getElementById('status').textContent.includes('karşı saldırı'))say('Yeni tur başladı. Ülkelerinden '+(ownedCount()*12)+' altın gelir elde ettin.');mode='source';source=null;selected=null;document.getElementById('selectedName').textContent='Haritadan ülke seç';document.getElementById('ownerTag').textContent='KARARGÂH';document.getElementById('selectedDetails').textContent='Önce kendi ülkene dokun, sonra komşu hedef seç.';redraw()}
+function boot(){fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson').then(r=>{if(!r.ok)throw Error();return r.json()}).then(data=>{
+ data.features.forEach(f=>{let n=nameOf(f);features[n]=f;});
+ geoLayer=L.geoJSON(data,{style:f=>styleFor(nameOf(f)),onEachFeature:(f,l)=>{let n=nameOf(f);layers[n]=l;l.on('click',()=>choose(n));l.bindTooltip(n,{sticky:true});}}).addTo(map);
+ say('Harita yüklendi! Türkiye senin. Önce Türkiye’ye dokun, sonra komşu ülke seç.');redraw();map.setView([30,30],3);
+ }).catch(()=>say('Harita yüklenemedi. İnternet bağlantını kontrol edip sayfayı yenile.'))}
+document.getElementById('attack').onclick=battle;document.getElementById('recruit').onclick=recruit;document.getElementById('end').onclick=endTurn;
+document.getElementById('center').onclick=()=>map.setView([39,35],4);
+document.getElementById('help').onclick=()=>say('1) Türkiye’ye dokun. 2) Mavi sınır komşusu olmayan bir ülke seç. 3) SALDIR. 4) Asker al ve turu bitir. Fethedilen her ülke tur başına 12 altın kazandırır. Savaşta düşmanın savunması ve rastgele savaş gücü hesaba katılır.');
+document.getElementById('restart').onclick=()=>{if(!confirm('Yeni oyun başlatılsın mı?'))return;state=JSON.parse(JSON.stringify(initial));gold=120;turn=1;selected=null;source=null;mode='source';document.getElementById('selectedName').textContent='Haritadan ülke seç';document.getElementById('ownerTag').textContent='KARARGÂH';document.getElementById('selectedDetails').textContent='Türkiye başlangıç ülkendir.';say('Yeni oyun başladı. Türkiye senin karargâhın.');redraw()};
+state=JSON.parse(JSON.stringify(initial));stats();boot();
 </script>
-</body></html>
+</body>
+</html>
