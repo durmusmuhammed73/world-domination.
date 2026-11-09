@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>World Domination</title>
+<style>
+body {
+  background:#18232d;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  margin:0;
+}
+header {background:#101820;padding:15px}
+.stats {
+  display:flex;
+  justify-content:space-around;
+  padding:15px;
+  background:#263746;
+}
+#map {
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:5px;
+  padding:10px;
+  max-width:500px;
+  margin:auto;
+}
+.tile {
+  aspect-ratio:1;
+  border:2px solid #82909b;
+  border-radius:7px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  font-size:12px;
+  cursor:pointer;
+}
+.player {background:#1769aa}
+.enemy {background:#a52e32}
+.neutral {background:#59636b}
+.selected {border:3px solid yellow}
+button {
+  padding:12px;
+  margin:5px;
+  border:0;
+  border-radius:7px;
+  background:#d69b32;
+  font-weight:bold;
+}
+#message {padding:12px;min-height:35px}
+</style>
+</head>
+<body>
+<header>
+<h2>⚔ WORLD DOMINATION</h2>
+<p>Dünyayı fethet!</p>
+</header>
+
+<div class="stats">
+<span>💰 <b id="gold">30</b></span>
+<span>🏙 <b id="cities">3</b></span>
+<span>📅 <b id="turn">1</b></span>
+</div>
+
+<div id="message">Kendi şehrini seç!</div>
+<div id="map"></div>
+
+<button onclick="recruit()">➕ Asker üret (10)</button>
+<button onclick="endTurn()">⏭ Turu bitir</button>
+
+<script>
+const map = [
+["P","P","N","E","E"],
+["P","P","N","E","E"],
+["N","P","P","N","E"],
+["N","N","E","E","N"],
+["N","N","N","E","N"]
+];
+
+const units=map.map(row=>row.map(x=>
+x==="P"?3:x==="E"?2:0));
+
+const names=[
+"Ankara","İstanbul","İzmir","Berlin","Paris",
+"Roma","Moskova","Atina","Londra","Madrid",
+"Sofya","Bükreş","Kiev","Varşova","Viyana",
+"Oslo","Stockholm","Prag","Budapeşte","Belgrad",
+"Tahran","Bağdat","Kahire","Şam","Riyad"
+];
+
+let gold=30,turn=1,selected=null;
+const mapEl=document.getElementById("map");
+const message=document.getElementById("message");
+
+function render(){
+mapEl.innerHTML="";
+let cities=0;
+
+map.forEach((row,r)=>{
+row.forEach((owner,c)=>{
+if(owner==="P")cities++;
+const cell=document.createElement("div");
+cell.className="tile "+
+(owner==="P"?"player":owner==="E"?"enemy":"neutral");
+if(selected&&selected[0]===r&&selected[1]===c)
+cell.classList.add("selected");
+cell.innerHTML=`<b>${names[r*5+c]}</b><br>
+${owner==="P"?"🔵":owner==="E"?"🔴":"⚪"}<br>
+🪖 ${units[r][c]}`;
+cell.onclick=()=>selectTile(r,c);
+mapEl.appendChild(cell);
+});
+});
+
+document.getElementById("gold").textContent=gold;
+document.getElementById("cities").textContent=cities;
+document.getElementById("turn").textContent=turn;
+}
+
+function selectTile(r,c){
+if(!selected){
+if(map[r][c]!=="P"){
+message.textContent="Önce kendi şehrini seç!";
+return;
+}
+selected=[r,c];
+message.textContent="Şimdi komşu bölgeye saldır!";
+}else{
+const [sr,sc]=selected;
+if(Math.abs(r-sr)+Math.abs(c-sc)!==1){
+message.textContent="Sadece komşu bölgeye saldırabilirsin!";
+}else if(map[r][c]==="P"){
+message.textContent="Burası zaten senin!";
+}else{
+attack(sr,sc,r,c);
+}
+selected=null;
+}
+render();
+}
+
+function attack(sr,sc,r,c){
+if(units[sr][sc]<1){
+message.textContent="Askerin yok!";
+return;
+}
+if(map[r][c]==="N"){
+units[sr][sc]--;
+map[r][c]="P";
+units[r][c]=1;
+message.textContent="Bölgeyi ele geçirdin!";
+}else{
+if(units[sr][sc]<2){
+message.textContent="En az 2 asker gerekli!";
+return;
+}
+units[sr][sc]-=2;
+units[r][c]--;
+if(units[r][c]<=0){
+map[r][c]="P";
+units[r][c]=1;
+message.textContent="Zafer! Düşman şehri senin!";
+}else{
+message.textContent="Düşman direndi!";
+}
+}
+checkWin();
+}
+
+function recruit(){
+if(!selected){
+message.textContent="Önce kendi şehrini seç!";
+return;
+}
+let [r,c]=selected;
+if(map[r][c]!=="P")return;
+if(gold<10){
+message.textContent="Yeterli paran yok!";
+return;
+}
+gold-=10;
+units[r][c]+=2;
+message.textContent="2 asker üretildi!";
+render();
+}
+
+function endTurn(){
+turn++;
+let income=map.flat().filter(x=>x==="P").length*3;
+gold+=income;
+message.textContent="Yeni tur! "+income+" altın kazandın.";
+render();
+}
+
+function checkWin(){
+if(!map.flat().includes("E")){
+message.textContent="🏆 ZAFER! Bütün düşmanları yendin!";
+}
+}
+render();
+</script>
+</body>
+</html>
